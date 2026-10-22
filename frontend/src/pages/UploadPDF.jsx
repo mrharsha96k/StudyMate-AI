@@ -7,7 +7,7 @@ import { auth } from "../firebase";
 import UploadBox from "../components/UploadPDF/UploadBox";
 import PDFCard from "../components/UploadPDF/PDFCard";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://studymate-ai-backend-yq70.onrender.com";
 
 function UploadPDF() {
   const [uploadedPDFs, setUploadedPDFs] = useState([]);

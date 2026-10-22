@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaCloudUploadAlt, FaFilePdf } from "react-icons/fa";
 import { auth } from "../../firebase";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://studymate-ai-backend-yq70.onrender.com";
 
 function UploadBox() {
   const [selectedFile, setSelectedFile] = useState(null);

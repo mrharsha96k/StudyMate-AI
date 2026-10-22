@@ -14,8 +14,9 @@ import {
 
 import { auth } from "../firebase";
 
-const API_URL = "http://localhost:5000/api/ai";
-const FILES_API_URL = "http://localhost:5000/api/upload";
+const API_URL = "https://studymate-ai-backend-yq70.onrender.com/api/ai";
+
+const FILES_API_URL = "https://studymate-ai-backend-yq70.onrender.com/api/upload";
 
 function AIChat() {
   const [messages, setMessages] = useState([

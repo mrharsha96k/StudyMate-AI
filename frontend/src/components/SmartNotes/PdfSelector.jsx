@@ -6,7 +6,7 @@ import {
   FaSearch,
 } from "react-icons/fa";
 
-const API_URL = "http://localhost:5000/api/upload";
+const API_URL = "https://studymate-ai-backend-yq70.onrender.com";
 
 function PdfSelector({ selectedPdf, setSelectedPdf }) {
   const [pdfs, setPdfs] = useState([]);
@@ -43,7 +43,7 @@ function PdfSelector({ selectedPdf, setSelectedPdf }) {
 
       const idToken = await currentUser.getIdToken();
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/api/upload`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${idToken}`,

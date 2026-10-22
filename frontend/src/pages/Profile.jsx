@@ -16,7 +16,7 @@ import {
   FaExclamationCircle,
 } from "react-icons/fa";
 
-const API_URL = "http://localhost:5000/api/profile";
+const API_URL = "https://studymate-ai-backend-yq70.onrender.com/api/profile";
 
 const emptyProfile = {
   fullName: "",

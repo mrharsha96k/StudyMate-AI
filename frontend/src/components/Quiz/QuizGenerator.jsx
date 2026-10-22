@@ -6,7 +6,7 @@ import {
   FaSearch,
 } from "react-icons/fa";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://studymate-ai-backend-yq70.onrender.com";
 
 function QuizGenerator() {
   const [pdfs, setPdfs] = useState([]);

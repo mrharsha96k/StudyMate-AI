@@ -9,7 +9,7 @@ import Sidebar from "../components/Layout/Sidebar";
 import NotesGenerator from "../components/SmartNotes/NotesGenerator";
 import NotesPreview from "../components/SmartNotes/NotesPreview";
 
-const API_URL = "http://localhost:5000/api/ai/notes";
+const API_URL = "https://studymate-ai-backend-yq70.onrender.com/api/ai/notes";
 
 function SmartNotes() {
   const [selectedPdf, setSelectedPdf] = useState("");
