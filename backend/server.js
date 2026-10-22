@@ -2,24 +2,51 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
+import "dotenv/config";
+import profileRoutes from "./routes/profileRoutes.js";
 
 dotenv.config();
 
-console.log("Mongo URI:", process.env.MONGODB_URI);
-
-connectDB();
-
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+    ],
+  })
+);
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("StudyMate AI Backend Running 🚀");
+  res.json({
+    success: true,
+    message: "StudyMate AI Backend Running 🚀",
+  });
 });
+
+// PDF upload API
+app.use("/api/upload", uploadRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/profile", profileRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`StudyMate AI backend running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start backend:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

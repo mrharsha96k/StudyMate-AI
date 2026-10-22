@@ -1,9 +1,13 @@
 import PdfSelector from "./PdfSelector";
 
-function NotesGenerator() {
+function NotesGenerator({
+  selectedPdf,
+  setSelectedPdf,
+  onGenerate,
+  loading,
+}) {
   return (
     <div className="bg-slate-900 rounded-3xl p-10 border border-slate-700">
-
       <h2 className="text-3xl font-bold text-white">
         AI Note Generator
       </h2>
@@ -13,14 +17,19 @@ function NotesGenerator() {
         easy-to-understand notes.
       </p>
 
-      <PdfSelector />
+      <PdfSelector
+        selectedPdf={selectedPdf}
+        setSelectedPdf={setSelectedPdf}
+      />
 
       <button
-        className="mt-6 bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-xl font-semibold transition"
+        type="button"
+        onClick={onGenerate}
+        disabled={loading || !selectedPdf}
+        className="mt-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed px-8 py-3 rounded-xl font-semibold transition"
       >
-        Generate Smart Notes
+        {loading ? "Generating Notes..." : "Generate Smart Notes"}
       </button>
-
     </div>
   );
 }

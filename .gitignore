@@ -27,3 +27,9 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# Firebase Admin credentials
+/backend/config/serviceAccountKey.json
+
+# Backend uploaded files
+/backend/uploads/

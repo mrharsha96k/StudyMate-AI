@@ -1,10 +1,62 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 function Login() {
-  return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <div className="bg-slate-900 p-10 rounded-2xl shadow-2xl w-96">
+  const navigate = useNavigate();
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      setLoading(true);
+
+      await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
+
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      switch (err.code) {
+        case "auth/invalid-email":
+          setError("Please enter a valid email address.");
+          break;
+
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+        case "auth/user-not-found":
+          setError("Incorrect email or password.");
+          break;
+
+        case "auth/too-many-requests":
+          setError("Too many attempts. Please try again later.");
+          break;
+
+        case "auth/network-request-failed":
+          setError("Network error. Check your internet connection.");
+          break;
+
+        default:
+          console.error("Login error:", err);
+          setError("Unable to log in. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-8">
+      <div className="bg-slate-900 p-8 sm:p-10 rounded-2xl shadow-2xl w-full max-w-md">
         <h1 className="text-4xl font-bold text-blue-400 text-center">
           StudyMate AI
         </h1>
@@ -13,42 +65,66 @@ function Login() {
           Welcome Back 👋
         </p>
 
-        <div className="mt-8">
+        <form onSubmit={handleLogin}>
+          <div className="mt-8">
+            <label
+              htmlFor="email"
+              className="text-gray-300"
+            >
+              Email Address
+            </label>
 
-          <label className="text-gray-300">
-            Email Address
-          </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-full mt-2 p-3 rounded-lg bg-slate-800 text-white outline-none border border-slate-700 focus:border-blue-500"
+              required
+            />
+          </div>
 
-          <input
-            type="email"
-            placeholder="Enter your email"
-            className="w-full mt-2 p-3 rounded-lg bg-slate-800 text-white outline-none border border-slate-700 focus:border-blue-500"
-          />
+          <div className="mt-5">
+            <label
+              htmlFor="password"
+              className="text-gray-300"
+            >
+              Password
+            </label>
 
-        </div>
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="w-full mt-2 p-3 rounded-lg bg-slate-800 text-white outline-none border border-slate-700 focus:border-blue-500"
+              required
+            />
+          </div>
 
-        <div className="mt-5">
+          {error && (
+            <p
+              role="alert"
+              className="mt-4 text-sm text-red-400"
+            >
+              {error}
+            </p>
+          )}
 
-          <label className="text-gray-300">
-            Password
-          </label>
-
-          <input
-            type="password"
-            placeholder="Enter your password"
-            className="w-full mt-2 p-3 rounded-lg bg-slate-800 text-white outline-none border border-slate-700 focus:border-blue-500"
-          />
-
-        </div>
-
-        <Link to="/dashboard">
-            <button className="w-full mt-8 bg-blue-500 hover:bg-blue-600 py-3 rounded-lg font-semibold transition">
-                Login
-            </button>
-        </Link>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-8 bg-blue-500 hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed py-3 rounded-lg font-semibold text-white transition"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
         <p className="text-center text-gray-400 mt-6">
-
           Don't have an account?
 
           <Link
@@ -57,12 +133,11 @@ function Login() {
           >
             Sign Up
           </Link>
-
         </p>
-
       </div>
     </div>
   );
 }
 
 export default Login;
+
