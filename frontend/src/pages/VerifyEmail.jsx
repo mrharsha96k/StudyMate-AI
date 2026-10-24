@@ -1,56 +1,82 @@
-
 import { useEffect, useState } from "react";
+import {
+  applyActionCode,
+  checkActionCode,
+  reload,
+} from "firebase/auth";
 import { Link, useSearchParams } from "react-router-dom";
-
-const API_URL = "https://studymate-ai-backend-yq70.onrender.com";
+import { auth } from "../firebase";
 
 function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("verifying");
   const [message, setMessage] = useState(
-    "Verifying your email address..."
+    "Checking your email verification link..."
   );
 
   useEffect(() => {
     let cancelled = false;
 
     async function verifyEmail() {
-      const token = searchParams.get("token");
+      const mode = searchParams.get("mode");
+      const oobCode = searchParams.get("oobCode");
 
-      if (!token) {
-        setStatus("error");
-        setMessage("This verification link is invalid or incomplete.");
+      // Firebase email verification link.
+      if (mode === "verifyEmail" && oobCode) {
+        try {
+          await checkActionCode(auth, oobCode);
+          await applyActionCode(auth, oobCode);
+
+          if (!cancelled) {
+            setStatus("success");
+            setMessage(
+              "Your email has been verified successfully! You can now log in."
+            );
+          }
+        } catch (error) {
+          console.error("Firebase email verification error:", error);
+
+          if (!cancelled) {
+            setStatus("error");
+            setMessage(
+              "This verification link is invalid, expired, or has already been used. Try logging in or request a new verification email."
+            );
+          }
+        }
+
         return;
       }
 
+      // If the user returns to this page manually, check their
+      // currently signed-in Firebase account.
       try {
-        const response = await fetch(`${API_URL}/api/register/verify`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token }),
-        });
+        if (auth.currentUser) {
+          await reload(auth.currentUser);
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.message || "Email verification failed."
-          );
+          if (auth.currentUser.emailVerified) {
+            if (!cancelled) {
+              setStatus("success");
+              setMessage(
+                "Your email is verified! You can now log in."
+              );
+            }
+            return;
+          }
         }
 
-        if (!cancelled) {
-          setStatus("success");
-          setMessage(
-            "Your email has been verified and your account has been created. You can now log in."
-          );
-        }
-      } catch (error) {
         if (!cancelled) {
           setStatus("error");
           setMessage(
-            error.message || "Unable to verify your email. Please try again."
+            "Open the verification link from your email. If it has expired, log in and request another verification email."
+          );
+        }
+      } catch (error) {
+        console.error("Unable to check verification status:", error);
+
+        if (!cancelled) {
+          setStatus("error");
+          setMessage(
+            "Unable to check verification status. Please try again."
           );
         }
       }
@@ -104,10 +130,10 @@ function VerifyEmail() {
 
         {status === "error" && (
           <Link
-            to="/register"
+            to="/login"
             className="inline-block mt-6 text-blue-400 hover:underline"
           >
-            Return to Sign Up
+            Return to Login
           </Link>
         )}
       </div>

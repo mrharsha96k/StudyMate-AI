@@ -12,7 +12,7 @@ export const authMiddleware = async (req, res, next) => {
       });
     }
 
-    const idToken = authHeader.split(" ")[1];
+    const idToken = authHeader.slice(7).trim();
 
     if (!idToken) {
       return res.status(401).json({
@@ -23,13 +23,23 @@ export const authMiddleware = async (req, res, next) => {
 
     const decodedToken = await firebaseAuth.verifyIdToken(idToken);
 
-    // UID comes from the verified Firebase token, never from client input.
+    // Block accounts that haven't verified their email.
+    if (decodedToken.email_verified !== true) {
+      return res.status(403).json({
+        success: false,
+        code: "EMAIL_NOT_VERIFIED",
+        message: "Please verify your email before accessing StudyMate AI.",
+      });
+    }
+
+    // Identity is taken only from the verified Firebase token.
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email ?? null,
+      emailVerified: decodedToken.email_verified === true,
     };
 
-    next();
+    return next();
   } catch (error) {
     console.error("Authentication verification failed:", error.message);
 

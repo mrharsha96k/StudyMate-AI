@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  signOut,
+} from "firebase/auth";
 import { auth } from "../firebase";
 
 function Login() {
@@ -18,11 +22,28 @@ function Login() {
     try {
       setLoading(true);
 
-      await signInWithEmailAndPassword(
+      const credential = await signInWithEmailAndPassword(
         auth,
-        email.trim(),
+        email.trim().toLowerCase(),
         password
       );
+
+      await credential.user.reload();
+
+      if (!credential.user.emailVerified) {
+        try {
+          await sendEmailVerification(credential.user);
+        } catch (emailError) {
+          console.error("Verification email error:", emailError);
+        }
+
+        await signOut(auth);
+
+        setError(
+          "Please verify your email before logging in. Check your inbox and spam folder. We attempted to send a verification email."
+        );
+        return;
+      }
 
       navigate("/dashboard", { replace: true });
     } catch (err) {

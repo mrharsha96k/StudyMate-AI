@@ -1,12 +1,14 @@
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-
-const API_URL = "https://studymate-ai-backend-yq70.onrender.com";
+import { Link } from "react-router-dom";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
+  signOut,
+} from "firebase/auth";
+import { auth } from "../firebase";
 
 function Register() {
-  const navigate = useNavigate();
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,38 +34,61 @@ function Register() {
       return;
     }
 
+    let createdUser = null;
+
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_URL}/api/register/start`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullName: name,
-          email: normalizedEmail,
-          password,
-        }),
+      const credential = await createUserWithEmailAndPassword(
+        auth,
+        normalizedEmail,
+        password
+      );
+
+      createdUser = credential.user;
+
+      await updateProfile(createdUser, {
+        displayName: name,
       });
 
-      const data = await response.json();
+      await sendEmailVerification(createdUser);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Unable to start registration.");
-      }
+      // Leave no signed-in session while the email is unverified.
+      await signOut(auth);
 
+      setPassword("");
       setMessage(
-        data.message ||
-          "Verification email sent. Check your inbox to complete registration."
+        "Verification email sent! Check your inbox and spam folder, then click the link before logging in."
       );
-
     } catch (err) {
       console.error("Registration error:", err);
-      setError(
-        err.message ||
-          "Unable to connect to the server. Please try again."
-      );
+
+      if (createdUser && !createdUser.emailVerified) {
+        try {
+          await signOut(auth);
+        } catch {
+          // Keep the original registration error.
+        }
+      }
+
+      switch (err.code) {
+        case "auth/email-already-in-use":
+          setError("This email is already registered. Please log in.");
+          break;
+        case "auth/invalid-email":
+          setError("Please enter a valid email address.");
+          break;
+        case "auth/weak-password":
+          setError("Please choose a stronger password.");
+          break;
+        case "auth/too-many-requests":
+          setError("Too many attempts. Please try again later.");
+          break;
+        default:
+          setError(
+            "Registration or email delivery failed. If the account was created, try logging in to check or resend verification."
+          );
+      }
     } finally {
       setLoading(false);
     }

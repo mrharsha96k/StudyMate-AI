@@ -6,7 +6,6 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import "dotenv/config";
 import profileRoutes from "./routes/profileRoutes.js";
-import registrationRoutes from "./routes/registrationRoutes.js";
 
 dotenv.config();
 
@@ -40,7 +39,6 @@ app.get("/", (req, res) => {
 app.use("/api/upload", uploadRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/profile", profileRoutes);
-app.use("/api/register", registrationRoutes);
 
 const PORT = process.env.PORT || 5000;
 

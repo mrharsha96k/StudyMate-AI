@@ -13,12 +13,17 @@ function ProtectedRoute() {
     );
   }
 
+  // User must be logged in
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // User must verify their email
+  if (!user.emailVerified) {
+    return <Navigate to="/verify-email" replace />;
   }
 
   return <Outlet />;
 }
 
 export default ProtectedRoute;
-
