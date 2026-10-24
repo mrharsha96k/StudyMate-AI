@@ -1,10 +1,8 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  createUserWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
-import { auth } from "../firebase";
+
+const API_URL = "https://studymate-ai-backend-yq70.onrender.com";
 
 function Register() {
   const navigate = useNavigate();
@@ -13,14 +11,16 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+    setMessage("");
 
     const name = fullName.trim();
-    const normalizedEmail = email.trim();
+    const normalizedEmail = email.trim().toLowerCase();
 
     if (!name || !normalizedEmail || !password) {
       setError("Please fill in all fields.");
@@ -35,35 +35,35 @@ function Register() {
     try {
       setLoading(true);
 
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        normalizedEmail,
-        password
-      );
-
-      await updateProfile(userCredential.user, {
-        displayName: name,
+      const response = await fetch(`${API_URL}/api/register/start`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: name,
+          email: normalizedEmail,
+          password,
+        }),
       });
 
-      navigate("/dashboard", { replace: true });
-    } catch (err) {
-      switch (err.code) {
-        case "auth/email-already-in-use":
-          setError("This email is already registered. Please log in.");
-          break;
-        case "auth/invalid-email":
-          setError("Please enter a valid email address.");
-          break;
-        case "auth/weak-password":
-          setError("Please choose a stronger password.");
-          break;
-        case "auth/network-request-failed":
-          setError("Network error. Check your internet connection.");
-          break;
-        default:
-          console.error("Registration error:", err);
-          setError("Unable to create your account. Please try again.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to start registration.");
       }
+
+      setMessage(
+        data.message ||
+          "Verification email sent. Check your inbox to complete registration."
+      );
+
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError(
+        err.message ||
+          "Unable to connect to the server. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -82,13 +82,9 @@ function Register() {
 
         <form onSubmit={handleRegister}>
           <div className="mt-6">
-            <label
-              htmlFor="fullName"
-              className="text-gray-300"
-            >
+            <label htmlFor="fullName" className="text-gray-300">
               Full Name
             </label>
-
             <input
               id="fullName"
               type="text"
@@ -102,13 +98,9 @@ function Register() {
           </div>
 
           <div className="mt-5">
-            <label
-              htmlFor="email"
-              className="text-gray-300"
-            >
+            <label htmlFor="email" className="text-gray-300">
               Email Address
             </label>
-
             <input
               id="email"
               type="email"
@@ -122,13 +114,9 @@ function Register() {
           </div>
 
           <div className="mt-5">
-            <label
-              htmlFor="password"
-              className="text-gray-300"
-            >
+            <label htmlFor="password" className="text-gray-300">
               Password
             </label>
-
             <input
               id="password"
               type="password"
@@ -143,11 +131,14 @@ function Register() {
           </div>
 
           {error && (
-            <p
-              role="alert"
-              className="mt-4 text-sm text-red-400"
-            >
+            <p role="alert" className="mt-4 text-sm text-red-400">
               {error}
+            </p>
+          )}
+
+          {message && (
+            <p role="status" className="mt-4 text-sm text-green-400">
+              {message}
             </p>
           )}
 
@@ -156,13 +147,12 @@ function Register() {
             disabled={loading}
             className="w-full mt-8 bg-blue-500 hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed py-3 rounded-lg font-semibold text-white transition"
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading ? "Sending Verification..." : "Create Account"}
           </button>
         </form>
 
         <p className="text-center text-gray-400 mt-6">
           Already have an account?
-
           <Link
             to="/login"
             className="text-blue-400 ml-2 hover:underline"

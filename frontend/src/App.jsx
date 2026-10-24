@@ -9,6 +9,7 @@ import AIChat from "./pages/AIChat";
 import SmartNotes from "./pages/SmartNotes";
 import Quiz from "./pages/Quiz";
 import Profile from "./pages/Profile";
+import VerifyEmail from "./pages/VerifyEmail";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -19,6 +20,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
 
       {/* Pages available only to authenticated users */}
       <Route element={<ProtectedRoute />}>
